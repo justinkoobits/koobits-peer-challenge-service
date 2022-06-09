@@ -8,6 +8,7 @@ using Koobits.PeerChallenge.Application.Common.Utilities.Pagination;
 using Koobits.PeerChallenge.Domain.Common.Constants;
 using Koobits.PeerChallenge.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace Koobits.PeerChallenge.Api.Controllers.V1
@@ -33,9 +34,10 @@ namespace Koobits.PeerChallenge.Api.Controllers.V1
             _logger = logger;
         }
 
-        //dommy endpoint:
+        //dommy endpoint:      
+        //old: [Route("GetSolutionByPCId/{pcId}")]
         [HttpGet]
-        [Route("ChallengeSolutions/{pcId}")]
+        [Route("{pcId}/Solutions")]
         // [ServiceFilter(typeof(TimeValidationAttribute))]
         public async Task<ServiceResponse<object>> GetSolutionByPCIdAsync(int pcId, int userId)
         {
@@ -72,9 +74,24 @@ namespace Koobits.PeerChallenge.Api.Controllers.V1
             });
         }
 
+
+        [HttpGet]
+        [Route("Subjects/{subjectId}/Users/{userId}/HasIncomingChallenges")]
+        // [ServiceFilter(typeof(TimeValidationAttribute))]
+        public async Task<ServiceResponse<object>> HasIncomingChallengesAsync(int subjectId, int userId)
+        {
+            return await Run(async () =>
+            {
+                // var hasIncomingChallenges = await _peerChallengeV2Service.HasIncomingChallengesAsync(subjectId);
+                var result = await Task.FromResult<object>(null);
+                // result.Result = hasIncomingChallenges;
+                return result;
+            });
+        }
+
         //dommy endpoint:
         [HttpGet]
-        [Route("Subjects/{subjectId}/Users/{userId}/HistoryChallenges/{period}/{challengeInitiater}")]
+        [Route("Subjects/{subjectId}/Users/{userId}/HistoryChallenges")]
         public ServiceResponse<IPagedList<object>> PeerChallengeHistory(int subjectId, int userId, int period, EnumChallengeInitiator challengeInitiater)
         {
             return Run(() =>
@@ -92,6 +109,19 @@ namespace Koobits.PeerChallenge.Api.Controllers.V1
             });
         }
 
+        [HttpGet]
+        [Route("Subjects/{subjectId}/Users/{userId}/Quota")]
+        public ServiceResponse<string> GetChallengesQuota(int subjectId, int userId)
+        {
+            return Run(() =>
+            {
+                // var result = _peerChallengeV2Service.GetChallengesQuota(subjectId);
+                return "";
+            });
+        }
+
+        //dommy endpoint:
+        //old: {subjectId}/NewPeerChallenge/{opponentId}
         [HttpGet]
         [Route("Subjects/{subjectId}/Issue")]
         // [ServiceFilter(typeof(TimeValidationAttribute))]
@@ -112,9 +142,9 @@ namespace Koobits.PeerChallenge.Api.Controllers.V1
         }
 
         [HttpPost]
-        [Route("Accept/{peerChallengeId}")]
+        [Route("{pcId}/Users/{userId}/Accept")]
         // [ServiceFilter(typeof(TimeValidationAttribute))]
-        public async Task<ServiceResponse<object>> AcceptPeerChallenge(int peerChallengeId)
+        public async Task<ServiceResponse<object>> AcceptPeerChallenge(int pcId)
         {
             return await Run(async () =>
             {
@@ -130,9 +160,9 @@ namespace Koobits.PeerChallenge.Api.Controllers.V1
         }
 
         [HttpPost]
-        [Route("Reject/{peerChallengeId}")]
+        [Route("{pcId}/Users/{userId}/Reject")]
         // [ServiceFilter(typeof(TimeValidationAttribute))]
-        public async Task<ServiceResponse<List<object>>> RejectPeerChallenge(int peerChallengeId)
+        public async Task<ServiceResponse<List<object>>> RejectPeerChallenge(int pcId)
         {
             return await Run(async () =>
             {
@@ -147,37 +177,29 @@ namespace Koobits.PeerChallenge.Api.Controllers.V1
             });
         }
 
-        // [HttpPost]
-        // [Route("SubmitPeerChallenge")]
-        // // [ServiceFilter(typeof(TimeValidationAttribute))]
-        // public async Task<ServiceResponse<PeerChallengeResponseModel>> SubmitPeerChallenge([FromBody] InputPCSubmissionModel inputPeerChallengeModel)
-        // {
-        //     return await Run(async () =>
-        //     {
-        //         if (ModelState.IsValid)
-        //         {
-        //             var result = await _peerChallengeV2Service.SubmitPeerChallengeAsync(inputPeerChallengeModel);
-        //             if (result == null)
-        //             {
-        //                 throw new ExpectedException(nameof(Constants.CommonMessages.ER013),
-        //                     Constants.CommonMessages.ER013);
-        //             }
+        [HttpPost]
+        [Route("Submit")]
+        // [ServiceFilter(typeof(TimeValidationAttribute))]
+        public async Task<ServiceResponse<object>> SubmitPeerChallenge([FromBody] object inputPeerChallengeModel)
+        {
+            return await Run(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+                    // var result = await _peerChallengeV2Service.SubmitPeerChallengeAsync(inputPeerChallengeModel);
+                      var result = await Task.FromResult<object>(null);
+                    if (result == null)
+                    {
+                        throw new ExpectedException(nameof(Constants.CommonMessages.ER013),
+                            Constants.CommonMessages.ER013);
+                    }
 
-        //             return result;
-        //         }
+                    return result;
+                }
 
-        //         var modelStateErrors = ConvertHelper.SerializetoString<List<ModelErrorCollection>>(ModelState.Select(m => m.Value.Errors).ToList());
-        //         throw new ExpectedException("ER008", string.Format(Constants.CommonMessages.ER008, modelStateErrors));
-        //     });
-        // }
-
-
-
-
-
-
-
-
-
+                var modelStateErrors = ConvertHelper.SerializetoString<List<ModelErrorCollection>>(ModelState.Select(m => m.Value.Errors).ToList());
+                throw new ExpectedException("ER008", string.Format(Constants.CommonMessages.ER008, modelStateErrors));
+            });
+        }
     }
 }
